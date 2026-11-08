@@ -14,7 +14,7 @@
 
 A PumpTown rögzíti a pump.fun kereskedéseket, pontozza az aktív coinokat, és élő árakon teszteli a kereskedési szabályokat. AI-ügynökök trendeket figyelnek és coin-ötleteket javasolnak, mindezt egy 3D városban követheted. A saját gépeden fut, és üresen indul.
 
-A kereskedések szimuláltak. A PumpTown nem küld megbízást, és sosem kér privát kulcsot. Ez nem pénzügyi tanácsadás.
+A kereskedések szimuláltak. A PumpTown nem küld megbízást, és sosem kér privát kulcsot. Ez nem pénzügyi tanácsadás. A PumpTown nem áll kapcsolatban a pump.fun-nal.
 
 ## Gyors indítás
 

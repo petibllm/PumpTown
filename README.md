@@ -14,7 +14,7 @@
 
 PumpTown records pump.fun trades, grades active coins and tests trading rules on live prices. AI agents scan trends and suggest coin ideas, and you can watch all of it in a 3D town. It runs on your own computer and starts empty.
 
-Trades are simulated. PumpTown sends no orders and never asks for a private key. This is not financial advice.
+Trades are simulated. PumpTown sends no orders and never asks for a private key. This is not financial advice. PumpTown is not affiliated with pump.fun.
 
 ## Quick start
 
