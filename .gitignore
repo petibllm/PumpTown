@@ -14,8 +14,9 @@
 !start.bat
 
 !docs/*.md
-!docs/images/*.jpg
+!docs/media/*.gif
 !tests/*.py
+!.github/workflows/*.yml
 
 !copilot/chain_checks.py
 !copilot/coin_report.py

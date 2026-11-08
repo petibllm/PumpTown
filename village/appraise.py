@@ -35,6 +35,16 @@ SCHEMA = """CREATE TABLE IF NOT EXISTS coins(id INTEGER PRIMARY KEY, ts INT, min
 CREATE INDEX IF NOT EXISTS ix_coins_mint ON coins(mint, ts);"""
 
 
+def dev_share(r):
+    """Share of supply the developer holds: exact from the chain, otherwise estimated from recorded trades."""
+    live, launch = r.get("live") or {}, r.get("launch") or {}
+    if "dev_holds_pct" in live:
+        return live["dev_holds_pct"]
+    if "dev_bought_pct" in launch:
+        return max(0.0, launch["dev_bought_pct"] - launch.get("dev_sold_pct", 0.0))
+    return None
+
+
 def chain_score(r):
     """Score from real chain data. Returns (score, good points, bad points, critical?)."""
     F, L, D, C = r["flow"], r["launch"], r.get("dev") or {}, r.get("copycats") or {}
@@ -196,7 +206,7 @@ def grade_one(db, mint, smart=()):
                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                (int(time.time()), mint, c.get("name"), c.get("symbol"), grade, score, r["flow"].get("mcap_sol"),
                 json.dumps({"good": good + ng, "bad": bad + nb}, ensure_ascii=False), narrative, int(x is not None),
-                (r.get("live") or {}).get("dev_holds_pct"), json.dumps(list(smart), ensure_ascii=False)))
+                dev_share(r), json.dumps(list(smart), ensure_ascii=False)))
     db.commit()
     log("appraiser", "grade", f"{c.get('symbol') or mint[:6]}: {grade} ({score})")
 

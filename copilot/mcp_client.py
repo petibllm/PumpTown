@@ -7,6 +7,7 @@ import json
 import os
 import queue
 import shlex
+import shutil
 import subprocess
 import threading
 import time
@@ -19,6 +20,7 @@ CONFIG = ROOT / "mcp_servers.json"
 PROTOCOL = "2025-06-18"
 TIMEOUT_S = 30
 CACHE_S = 300
+MASK = "********"
 _cache = {"ts": 0.0, "tools": []}
 
 
@@ -34,8 +36,14 @@ def load():
     return servers if isinstance(servers, list) else []
 
 
+def public():
+    """What the settings page may see: header names, never header values."""
+    return [{**s, "headers": {k: MASK for k in s.get("headers") or {}}} for s in load()]
+
+
 def save(servers):
     clean = []
+    old = {s["name"]: s.get("headers") or {} for s in load()}
     for s in servers:
         name, url, command = str(s.get("name", "")).strip(), str(s.get("url", "")).strip(), str(s.get("command", "")).strip()
         if not name or not (url or command):
@@ -45,7 +53,8 @@ def save(servers):
         if url and not url.startswith(("http://", "https://")):
             raise McpError(f"Server '{name}' has an invalid URL.")
         headers = s.get("headers") if isinstance(s.get("headers"), dict) else {}
-        clean.append({"name": name, "url": url, "command": command, "headers": {str(k): str(v) for k, v in headers.items()},
+        headers = {str(k): old.get(name, {}).get(k, "") if v == MASK else str(v) for k, v in headers.items()}
+        clean.append({"name": name, "url": url, "command": command, "headers": headers,
                       "enabled": bool(s.get("enabled", True)), "allow_write": bool(s.get("allow_write", False))})
     tmp = CONFIG.with_suffix(".tmp")
     tmp.write_text(json.dumps(clean, indent=2), encoding="utf-8")
@@ -57,7 +66,9 @@ def save(servers):
 class Stdio:
     def __init__(self, server):
         try:
-            self.p = subprocess.Popen(shlex.split(server["command"]), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            argv = [a.strip('"') for a in shlex.split(server["command"], posix=os.name != "nt")]
+            argv[0] = shutil.which(argv[0]) or argv[0]
+            self.p = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                       stderr=subprocess.DEVNULL, text=True, encoding="utf-8", bufsize=1)
         except (OSError, ValueError) as e:
             raise McpError(f"cannot start {server['name']}: {e}") from e

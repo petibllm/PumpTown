@@ -60,6 +60,11 @@ def _ready(name, env):
     return bool(env.get(KEYS[name]))
 
 
+def x_available(env=None):
+    env = settings() if env is None else env
+    return bool(env.get(KEYS["xai"]) or env.get("X_BEARER_TOKEN"))
+
+
 def label():
     name = provider()
     return PROVIDERS[name][0] if name else "no model key"

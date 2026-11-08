@@ -44,11 +44,15 @@ srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Fake)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 base = f"http://127.0.0.1:{srv.server_port}"
 os.environ.update(XAI_BASE=base, OPENAI_BASE=base, GROQ_BASE=base, ANTHROPIC_BASE_URL=base, X_API_BASE=base + "/2")
-sys.path[:0] = [str(ROOT / "village"), str(ROOT / "copilot")]
+sys.path[:0] = [str(ROOT), str(ROOT / "village"), str(ROOT / "copilot")]
+import run  # noqa: E402
+
+run.ensure_idl()
 import server  # noqa: E402
 import village  # noqa: E402
 
 village.BUDGET = Path(tempfile.mkdtemp()) / "b.json"
+village.llm.env_file = village.env_file = lambda: {}  # tests must not read your own .env
 ALL = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY", "X_BEARER_TOKEN", "LLM_PROVIDER", "GROQ_API_KEY", "LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL")
 X = {"type": "x_search", "from_date": "2026-11-07"}
 
@@ -171,6 +175,11 @@ except mcp_client.McpError:
     pass
 else:
     raise AssertionError("write tool was allowed")
+mcp_client.save([{"name": "web", "url": "https://example.com/mcp", "headers": {"Authorization": "Bearer secret-value"}}])
+assert "secret-value" not in json.dumps(mcp_client.public())
+mcp_client.save(mcp_client.public())
+assert mcp_client.load()[0]["headers"]["Authorization"] == "Bearer secret-value"
+mcp_client.save([{"name": "demo", "command": cmd}])
 setenv(XAI_API_KEY="k-x")
 
 
@@ -193,4 +202,11 @@ village.ask = fake_ask
 assert server.chief_reply("use it") == "done" and Script.n == 2
 village.ask = real_ask
 print("OK MCP: read tools work, write tools blocked, the Chief can call tools")
+import appraise  # noqa: E402
+
+assert appraise.dev_share({"live": {"dev_holds_pct": .02}, "launch": {"dev_bought_pct": .5}}) == .02
+assert appraise.dev_share({"live": None, "launch": {"dev_bought_pct": .08, "dev_sold_pct": .03}}) == .08 - .03
+assert appraise.dev_share({"launch": {"dev_bought_pct": .01, "dev_sold_pct": .4}}) == 0.0
+assert appraise.dev_share({"live": None, "launch": {}}) is None
+print("OK developer holding: chain first, recorded trades without an RPC key")
 srv.shutdown()

@@ -43,7 +43,7 @@ def ensure_idl():
 
 
 def child_env():
-    return {**os.environ, **settings.read_env(), "PYTHONPATH": str(ROOT / "copilot"), "PYTHONUNBUFFERED": "1"}
+    return {**os.environ, **settings.read_env(), "PYTHONPATH": str(ROOT / "copilot"), "PYTHONUNBUFFERED": "1", "PYTHONUTF8": "1"}
 
 
 def spawn(name, folder, script, *args):

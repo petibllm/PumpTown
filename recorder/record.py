@@ -7,7 +7,6 @@ Read-only: no funds, no keys, no transactions.
 Run:  PUMPTOWN_WSS=wss://a,wss://b python record.py
 """
 import asyncio
-import base64
 import collections
 import json
 import logging

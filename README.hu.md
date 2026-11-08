@@ -6,9 +6,9 @@
 
 [English](README.md) · **Magyar**
 
-![Licenc](https://img.shields.io/badge/licenc-MIT-green) ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Licenc](https://img.shields.io/badge/licenc-MIT-green) ![Python](https://img.shields.io/badge/python-3.11%2B-blue) [![Tests](https://github.com/petibllm/PumpTown/actions/workflows/tests.yml/badge.svg)](https://github.com/petibllm/PumpTown/actions/workflows/tests.yml)
 
-<img src="docs/images/town.jpg" alt="A PumpTown város nézete" width="640">
+<img src="docs/media/hero.gif" alt="PumpTown bemutató animáció" width="720">
 
 </div>
 
@@ -27,7 +27,11 @@ A kereskedések szimuláltak. A PumpTown nem küld megbízást, és sosem kér p
 
 A böngészőben megnyílik a beállítás. Add meg, amid van, a többit hagyd ki. Később bármikor visszatérhetsz a **⚙ Settings** gombbal.
 
-<div align="center"><img src="docs/images/settings.jpg" alt="A beállítások oldal" width="460"></div>
+Az első szimulált kereskedések néhány órát is várathatnak, mert a coinnak legalább 30 perces korúnak kell lennie, és minden szabálynak meg kell felelnie.
+
+## Így működik
+
+<div align="center"><img src="docs/media/tour.gif" alt="Rövid bemutató: beállítás, város, jegyek és tanulságok" width="720"></div>
 
 ## Mit csatlakoztathatsz
 
@@ -35,7 +39,7 @@ A böngészőben megnyílik a beállítás. Add meg, amid van, a többit hagyd k
 |---|---|---|
 | **AI szolgáltató** | Ügynökök és a Chief chat. Claude, ChatGPT, Gemini, Grok, OpenRouter, Groq, Mistral, DeepSeek, Ollama vagy bármilyen OpenAI-kompatibilis API | Az ügynökökhöz és a chathez |
 | **X adatok** | Trendfigyelés és coin-ellenőrzés, xAI-kulccsal vagy X API tokennel | Opcionális |
-| **Solana RPC** | Top tartók adatai. Egy ingyenes Helius-kulcs is jó | Opcionális |
+| **Solana RPC** | Pontos top tartó adatok. Egy ingyenes Helius-kulcs is jó | Opcionális |
 | **Saját wallet** | Egyenleg, pump.fun profil-link és a kereskedéseid, a nyilvános címed alapján | Opcionális |
 | **Követett walletek** | Jelölés azokon a coinokon, amelyeket ezek a walletek vesznek | Opcionális |
 | **Szerver** | A PumpTown futtatása a saját VPS-eden, SSH-n át | Opcionális |
@@ -71,7 +75,7 @@ PumpTown/
 ├── recorder/             A pump.fun és PumpSwap kereskedések rögzítése
 ├── copilot/              Coin-riportok, AI szolgáltatók, X és MCP kapcsolatok
 ├── village/              Pontozás, szimulátor, ügynökök, város és beállítások
-├── docs/                 Szabályok és képek
+├── docs/                 Szabályok és animációk
 └── tests/                Kulcs nélkül futó tesztek
 ```
 
@@ -84,13 +88,6 @@ python run.py tunnel
 ```
 
 A recorder naponta kb. 4 GB-ot ír, alapból az utolsó 7 napot tartja meg.
-
-## Tesztek
-
-```bash
-python tests/test_app.py
-python tests/test_x_check.py
-```
 
 ## Licenc
 

@@ -53,7 +53,10 @@ def read_jsonl(path, n):
     if not path.exists():
         return []
     rows = []
-    for line in path.read_text(encoding="utf8").splitlines()[-n:]:
+    with path.open("rb") as f:  # only the end of the file, so a long-running town stays fast
+        f.seek(max(0, path.stat().st_size - 400_000))
+        tail = f.read().decode("utf8", "ignore")
+    for line in tail.splitlines()[1:][-n:] if len(tail) >= 400_000 else tail.splitlines()[-n:]:
         try:
             rows.append(json.loads(line))
         except ValueError:
@@ -311,7 +314,7 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/api/state":
             self._send(200, json.dumps(state(), ensure_ascii=False).encode())
         elif self.path == "/api/settings":
-            body = {**settings.public(), "providers": {k: v[0] for k, v in llm.PROVIDERS.items()}, "mcp": mcp_client.load(), "active": llm.label()}
+            body = {**settings.public(), "providers": {k: v[0] for k, v in llm.PROVIDERS.items()}, "mcp": mcp_client.public(), "active": llm.label()}
             self._send(200, json.dumps(body, ensure_ascii=False).encode())
         elif self.path == "/api/wallets":
             db = sqlite3.connect(village.DB, timeout=30)

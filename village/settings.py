@@ -46,7 +46,7 @@ FIELDS = [
     f("X_DAILY_USD", "x", "Daily coin check budget (USD)", "Napi coin-ellenőrzési keret (USD)", kind="number", hint="1.0"),
 
     f("PUMPTOWN_RPC", "solana", "Solana RPC URL", "Solana RPC URL", True,
-      "Needed for top holders. A free Helius key works.", "A top tartókhoz kell. Egy ingyenes Helius-kulcs is jó."),
+      "Optional. Gives exact top holders, otherwise developer holding is estimated. A free Helius key works.", "Opcionális. Pontos top tartókat ad, nélküle a fejlesztő részesedése becsült. Egy ingyenes Helius-kulcs is jó."),
     f("PUMPTOWN_WSS", "solana", "WebSocket endpoints", "WebSocket végpontok", hint="wss://...,wss://...",
       help_en="Comma separated. Empty uses free public nodes. Applies after a restart.", help_hu="Vesszővel elválasztva. Üresen ingyenes nyilvános végpontok. Újraindítás után él."),
     f("RECORDER_KEEP_DAYS", "solana", "Keep recorded data (days)", "Rögzített adat megőrzése (nap)", kind="number", hint="7",

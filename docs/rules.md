@@ -13,7 +13,7 @@ Every account starts with 1 SOL. Trades are simulated on live prices, and fills 
 | Coin age when graded | at least 30 minutes |
 | Market cap | at least $7,000 |
 | Volume in the last 5 minutes | at least 5 SOL |
-| Developer holding | at most 5% of supply |
+| Developer holding | at most 5% of supply (exact with a Solana RPC key, otherwise estimated from recorded trades) |
 | Buy pressure | buys at least 80% of sells, 5 or more trades |
 | Rise in the last 5 minutes | at most 40% |
 | Open positions | at most 3 |
