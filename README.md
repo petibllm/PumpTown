@@ -8,13 +8,13 @@
 
 ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.11%2B-blue) [![Tests](https://github.com/petibllm/PumpTown/actions/workflows/tests.yml/badge.svg)](https://github.com/petibllm/PumpTown/actions/workflows/tests.yml)
 
-<img src="docs/media/hero.gif" alt="PumpTown launch animation" width="720">
+<img src="docs/media/hero.webp" alt="PumpTown launch animation" width="720">
 
 </div>
 
 PumpTown records pump.fun trades, grades active coins and tests trading rules on live prices. AI agents scan trends and suggest coin ideas, and you can watch all of it in a 3D town. It runs on your own computer and starts empty.
 
-Trades are simulated. PumpTown sends no orders and never asks for a private key. This is not financial advice. PumpTown is not affiliated with pump.fun.
+Trades are simulated. PumpTown sends no orders and never asks for a private key. This is not financial advice. PumpTown is not affiliated with pump.fun. See the [disclaimer](DISCLAIMER.md).
 
 ## Quick start
 
@@ -31,7 +31,7 @@ The first simulated trades can take a few hours, because a coin must be at least
 
 ## See it in action
 
-<div align="center"><img src="docs/media/tour.gif" alt="A short tour of setup, the town, grades and lessons" width="720"></div>
+<div align="center"><img src="docs/media/tour.webp" alt="A short tour of setup, the town, grades and lessons" width="720"></div>
 
 ## What you can connect
 
@@ -88,6 +88,10 @@ python run.py tunnel
 ```
 
 The recorder writes about 4 GB a day. By default it keeps the last 7 days.
+
+## Disclaimer
+
+PumpTown is for research and education only. It gives no financial advice, simulated results do not predict real ones, and memecoins can lose all their value. You use it at your own risk and are responsible for following the laws and service terms that apply to you. PumpTown has no token. Read the full [disclaimer](DISCLAIMER.md).
 
 ## License
 

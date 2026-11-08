@@ -8,13 +8,13 @@
 
 ![Licenc](https://img.shields.io/badge/licenc-MIT-green) ![Python](https://img.shields.io/badge/python-3.11%2B-blue) [![Tests](https://github.com/petibllm/PumpTown/actions/workflows/tests.yml/badge.svg)](https://github.com/petibllm/PumpTown/actions/workflows/tests.yml)
 
-<img src="docs/media/hero.gif" alt="PumpTown bemutató animáció" width="720">
+<img src="docs/media/hero.webp" alt="PumpTown bemutató animáció" width="720">
 
 </div>
 
 A PumpTown rögzíti a pump.fun kereskedéseket, pontozza az aktív coinokat, és élő árakon teszteli a kereskedési szabályokat. AI-ügynökök trendeket figyelnek és coin-ötleteket javasolnak, mindezt egy 3D városban követheted. A saját gépeden fut, és üresen indul.
 
-A kereskedések szimuláltak. A PumpTown nem küld megbízást, és sosem kér privát kulcsot. Ez nem pénzügyi tanácsadás. A PumpTown nem áll kapcsolatban a pump.fun-nal.
+A kereskedések szimuláltak. A PumpTown nem küld megbízást, és sosem kér privát kulcsot. Ez nem pénzügyi tanácsadás. A PumpTown nem áll kapcsolatban a pump.fun-nal. Lásd a [nyilatkozatot](DISCLAIMER.md).
 
 ## Gyors indítás
 
@@ -31,7 +31,7 @@ Az első szimulált kereskedések néhány órát is várathatnak, mert a coinna
 
 ## Így működik
 
-<div align="center"><img src="docs/media/tour.gif" alt="Rövid bemutató: beállítás, város, jegyek és tanulságok" width="720"></div>
+<div align="center"><img src="docs/media/tour.webp" alt="Rövid bemutató: beállítás, város, jegyek és tanulságok" width="720"></div>
 
 ## Mit csatlakoztathatsz
 
@@ -88,6 +88,10 @@ python run.py tunnel
 ```
 
 A recorder naponta kb. 4 GB-ot ír, alapból az utolsó 7 napot tartja meg.
+
+## Felelősségkizárás
+
+A PumpTown kizárólag kutatási és oktatási célú. Nem ad pénzügyi tanácsot, a szimulált eredmények nem jelzik előre a valódiakat, és a memecoinok teljes értéküket elveszíthetik. A szoftvert a saját felelősségedre használod, és te felelsz a rád vonatkozó törvények és szolgáltatási feltételek betartásáért. A PumpTownnak nincs tokenje. A teljes [nyilatkozat](DISCLAIMER.md) angolul olvasható.
 
 ## Licenc
 
