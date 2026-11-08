@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PumpTown</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--page:#ffd9a0;--bub:#fff;--bubtxt:#5a3320;--field:#fff;--line:#f0dcb4;--sky1:#ffe7b0;--sky2:#ffc98a;--sky3:#ff9f7a;--ring:#ffffff66;--cream:#fff4dc;--paper:#ffe9c2;--sand:#f6c77d;--honey:#ffb627;--tangerine:#ff8a3d;--coral:#f4634a;--berry:#c8385f;--leaf:#6fbf3f;--teal:#2bb6a8;--sky:#7fd6e8;--cocoa:#5a3320;--bark:#8a5a3c}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--page);color:var(--cocoa);font:16px/1.3 Fredoka,system-ui,sans-serif}
+#app{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:100vh;gap:12px;padding:12px;align-items:start}
+#main{display:flex;flex-direction:column;gap:12px;min-width:0}
+#world{position:relative;height:66vh;min-height:420px;min-width:0;border-radius:18px;overflow:hidden;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--sky3));box-shadow:inset 0 0 0 4px var(--ring),0 5px 0 var(--bark)}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+#bubbles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.bubble{position:absolute;padding:6px 12px;background:var(--bub);color:var(--bubtxt);border-radius:14px;border:3px solid var(--cocoa);font-size:17px;font-weight:600;line-height:1.15;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 3px 0 #5a332066}
+.bubble:after{content:"";position:absolute;left:50%;bottom:-9px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--cocoa);border-bottom:0}
+.thought{position:absolute;padding:5px 12px;background:var(--bub);color:var(--bubtxt);border-radius:18px;font-size:16px;font-weight:500;line-height:1.15;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 3px 8px #5a332055}
+.thought:before,.thought:after{content:"";position:absolute;background:var(--bub);border-radius:50%}
+.thought:before{width:9px;height:9px;left:50%;bottom:-7px}.thought:after{width:5px;height:5px;left:calc(50% - 6px);bottom:-13px}
+.thought.busy{background:#ffe08a;color:#5a3320}.thought.busy:before,.thought.busy:after{background:#ffe08a}
+#controls{position:absolute;right:12px;bottom:56px;display:flex;flex-direction:column;gap:6px}
+#controls button{width:40px;height:40px;padding:0;font-size:18px}
+#help{position:absolute;left:12px;bottom:12px;font-size:13px;color:var(--cocoa);background:#ffffff8c;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:10px;padding:3px 9px}
+#card{z-index:3}
+.tabs{display:flex}.tabs button{flex:1;border:0;padding:7px 8px;font:600 16px Fredoka,sans-serif;color:#fff;background:#6fbf3f99;cursor:pointer}.tabs button.on{background:var(--leaf)}
+.coin{margin:0 0 9px;padding:7px 10px;background:var(--paper);border-radius:10px;border-left:7px solid #ddd}
+.coin a{color:var(--cocoa);font-weight:600;text-decoration:none}.coin a:hover{text-decoration:underline}
+.coin small{display:block;color:var(--bark);font-size:13px}
+.badge{display:inline-block;padding:0 8px;border-radius:9px;font-size:13px;font-weight:600;margin-right:6px;color:#fff;text-shadow:0 1px 0 #0003}
+.g-F{background:#e9e3d6;color:#6d6252;text-shadow:none}.g-E{background:#3f8fe0}.g-D{background:#3fae5a}.g-C{background:#8d5bd1}.g-B{background:#ff8a1f}.g-A{background:#e0342f}
+.g-S{background:linear-gradient(90deg,#f4634a,#ffc53d,#6fbf3f,#3fa7e0,#8d6bd1)}
+.b-F{border-color:#d8d0c0}.b-E{border-color:#3f8fe0}.b-D{border-color:#3fae5a}.b-C{border-color:#8d5bd1}.b-B{border-color:#ff8a1f}.b-A{border-color:#e0342f}.b-S{border-image:linear-gradient(#f4634a,#ffc53d,#6fbf3f,#3fa7e0,#8d6bd1) 1}
+.ladder{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px}.ladder .badge{margin:0;font-size:12px}
+.done{position:absolute;transform:translate(-50%,-50%);background:#fff;color:var(--cocoa);border-radius:10px;padding:0 7px;font-size:13px;font-weight:600;box-shadow:0 2px 4px #5a332055;white-space:nowrap}
+.nametag{position:absolute;transform:translate(-50%,0);font-size:12px;font-weight:600;color:#fff;background:#5a3320b8;padding:0 6px;border-radius:8px;white-space:nowrap}
+#hud{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--cream);border:3px solid var(--cocoa);border-radius:10px;padding:2px 9px;font-size:14px;box-shadow:0 3px 0 var(--cocoa)}
+.chip b{color:var(--berry);font-weight:600}
+#replay,button.send,#controls button{font:600 15px Fredoka,sans-serif;color:var(--cocoa);cursor:pointer;border-radius:14px;border:1px solid #ffffffb3;background:linear-gradient(135deg,#ffffff8c,#ffffff33);-webkit-backdrop-filter:blur(12px) saturate(170%);backdrop-filter:blur(12px) saturate(170%);box-shadow:inset 0 1px 0 #ffffffcc,inset 0 -1px 0 #ffffff40,0 6px 16px #5a332038;transition:background .15s,transform .1s}
+#replay{position:absolute;right:12px;bottom:12px;padding:7px 15px}
+#replay:hover,button.send:hover,#controls button:hover{background:linear-gradient(135deg,#ffffffb8,#ffffff59)}
+#replay:active,button.send:active,#controls button:active{transform:translateY(1px) scale(.98)}
+#side{display:flex;flex-direction:column;gap:12px;min-height:0;position:sticky;top:12px;height:calc(100vh - 24px)}
+#below{display:grid;grid-template-columns:minmax(300px,5fr) minmax(320px,6fr);gap:12px;align-items:start}
+#cal h2,#tr h2{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#0e7a4e}
+#cal h2 span{font-weight:500;font-size:15px}
+.nav{background:#ffffff2e;border:1px solid #ffffff66;color:#fff;border-radius:9px;font:600 15px Fredoka,sans-serif;padding:0 9px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:10px 12px 12px}
+.dow{font-size:12px;text-align:center;color:var(--bark)}
+.day{min-height:52px;padding:4px 5px;border-radius:10px;background:var(--paper);font-size:12px;color:var(--bark);overflow:hidden}
+.day b{display:block;margin-top:2px;font-size:12px;font-weight:600;color:var(--cocoa)}
+.day.up{background:#86e8ad}.day.up b{color:#04593a}.day.dn{background:#ffc9bd}.day.dn b{color:#b5301e}
+.day.now{box-shadow:inset 0 0 0 2px var(--tangerine)}.day.blank{background:none}
+#les{grid-column:1/-1}#les h2{background:#8d5bd1}
+.lcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;padding:10px 12px 12px}
+.lcols h3{margin:0 0 5px;font-size:15px;font-weight:600}
+.lesson{margin:0 0 7px;padding:6px 9px;border-radius:10px;background:var(--paper);font-size:14px;overflow-wrap:anywhere}
+.lesson b{font-weight:600}.lesson small{display:block;color:var(--bark);font-size:12px}
+#tr .wrap{max-height:340px;overflow:auto}
+#tr table{width:100%;border-collapse:collapse;font-size:14px}
+#tr th{position:sticky;top:0;background:var(--paper);text-align:left;font-weight:600;padding:5px 9px}
+#tr td{padding:5px 9px;border-top:1px solid var(--line);white-space:nowrap}
+#tr td.num,#tr th.num{text-align:right}
+#tr a{color:var(--cocoa);font-weight:600;text-decoration:none}
+.up{color:#0b8a55}.dn{color:#c9412c}
+.panel{background:var(--cream);border-radius:16px;box-shadow:0 5px 0 var(--bark);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.panel h2{margin:0;padding:7px 12px;font-size:17px;font-weight:600;color:#fff;background:var(--tangerine)}
+#ideasp h2{background:var(--leaf)}#logp h2{background:var(--teal)}
+#ideasp{flex:1.6}#logp{flex:.8}#chatp{flex:none}#chatp[open]{flex:1}
+#chatp summary{padding:7px 12px;font-size:16px;font-weight:600;color:#fff;background:var(--tangerine);cursor:pointer}
+#pnl{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px 14px 12%;border-radius:30px;color:#eafff1;overflow:hidden;
+ background:linear-gradient(135deg,#0c5a3c 0%,#0e7a4e 38%,#14a064 52%,#0b6a45 70%,#084a33 100%);
+ box-shadow:inset 0 2px 0 #ffffff66,inset 0 -3px 0 #00000033,inset 0 0 0 1px #ffffff2e,0 6px 0 #063a28,0 9px 20px #0b4a3366}
+#pnl:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,#ffffff24 46%,transparent 58%);pointer-events:none}
+#pCurve{position:absolute;inset:10px 0 6px 0;width:100%;height:calc(100% - 16px);opacity:.3;pointer-events:none}
+#pnl .eq,#pnl .stats{position:relative;z-index:1}
+#pnl .eq{display:flex;flex-direction:column;gap:1px}
+#pnl .eq>small{font-size:15px;font-weight:500;color:#d6fbe4}
+#pnl .big{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#pnl strong{font-size:40px;line-height:1.1;font-weight:600;color:#fff;text-shadow:0 2px 0 #0005}
+.pill{padding:3px 14px;border-radius:18px;font-weight:600;font-size:19px;color:#fff;background:linear-gradient(135deg,#ffffff4d,#ffffff1f);border:1px solid #ffffff73;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 #ffffff80}
+#pnl .note{font-size:12px;color:#c6f5d8}
+#pnl .stats{display:grid;grid-template-columns:repeat(2,minmax(112px,auto));gap:7px}
+.stat{padding:5px 13px;border-radius:18px;background:linear-gradient(135deg,#ffffff33,#ffffff14);border:1px solid #ffffff4d;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 #ffffff59}
+.stat small{display:block;font-size:12px;color:#d6fbe4}
+.stat b{font-size:15px;font-weight:600;color:#fff}
+.scroll{overflow-y:auto;padding:9px 12px;flex:1;min-height:0;scrollbar-color:var(--sand) transparent}
+.msg{margin:0 0 8px;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg b{color:var(--teal);font-weight:600}.msg.chief b{color:var(--berry)}
+.idea{margin:0 0 9px;padding:7px 10px;background:var(--paper);border-radius:10px;border-left:6px solid var(--leaf)}
+.idea.reject{opacity:.85}
+.idea b{font-weight:600}.idea small{display:block;color:var(--bark);font-size:13px}
+.log{margin:0 0 4px;font-size:13px;color:var(--bark);overflow-wrap:anywhere}.log b{color:var(--coral);font-weight:500}
+form{display:flex;gap:6px;padding:9px;background:var(--paper)}
+input{flex:1;min-width:0;background:var(--field);border:3px solid var(--sand);border-radius:10px;color:var(--cocoa);font:15px Fredoka,sans-serif;padding:6px 9px}
+input:focus{outline:none;border-color:var(--tangerine)}
+button.send{padding:0 15px;background:linear-gradient(135deg,#a8e05fb0,#6fbf3f73)}
+button.send:hover{background:linear-gradient(135deg,#a8e05fe0,#6fbf3f99)}
+#card{position:absolute;left:12px;bottom:12px;width:min(320px,calc(100% - 24px));background:var(--cream);border:3px solid var(--cocoa);border-radius:12px;padding:8px 11px;display:none;box-shadow:0 4px 0 var(--cocoa)}
+#card h3{margin:0 0 2px;color:var(--berry);font-size:17px;font-weight:600}
+#card p{margin:0 0 3px;font-size:14px;overflow-wrap:anywhere}
+@media(max-width:900px){#side{position:static;height:auto}#below{grid-template-columns:1fr}#main{min-height:60vh}#app{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:100vh}#side{min-height:60vh}}
+:root[data-theme="dark"]{--page:#14171f;--bub:#262b38;--bubtxt:#f4efe6;--field:#1b1f2a;--line:#333a4a;--sky1:#1c2233;--sky2:#2a2340;--sky3:#3a2340;--ring:#ffffff14;--cream:#20242f;--paper:#2a2f3c;--sand:#465066;--cocoa:#f0e9dc;--bark:#aeb6c5}
+:root[data-theme="dark"] .day.up{background:#17623f}:root[data-theme="dark"] .day.up b{color:#a6f7c6}
+:root[data-theme="dark"] .day.dn{background:#6b2b26}:root[data-theme="dark"] .day.dn b{color:#ffc4b8}
+:root[data-theme="dark"] .up{color:#6fe3a0}:root[data-theme="dark"] .dn{color:#ff9a86}
+:root[data-theme="dark"] #help{background:#00000066}
+:root[data-theme="dark"] .chip,:root[data-theme="dark"] #replay,:root[data-theme="dark"] #card{border-color:#465066;box-shadow:none}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<div id="app">
+  <div id="main">
+  <section id="pnl" aria-label="Profit tracker">
+    <svg id="pCurve" viewBox="0 0 200 48" preserveAspectRatio="none" aria-hidden="true"><polyline id="pLine" fill="none" stroke="#b6ffcf" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+    <div class="eq"><small>Balance</small><div class="big"><strong id="pEq">1.0000 SOL</strong><span class="pill" id="pPct">0.00%</span></div></div>
+    <div class="stats">
+      <div class="stat"><small>Today</small><b id="pDay">0.0000</b></div>
+      <div class="stat"><small>Realized</small><b id="pReal">0.0000</b></div>
+      <div class="stat"><small>Open</small><b id="pOpen">0 · 0.0000</b></div>
+      <div class="stat"><small>Win rate</small><b id="pWin">-</b></div>
+    </div>
+  </section>
+  <div id="world">
+    <canvas id="gl" aria-label="PumpTown village"></canvas>
+    <div id="bubbles"></div>
+    <div id="hud"><a class="chip" href="/settings" style="text-decoration:none;color:inherit;pointer-events:auto">⚙ Settings</a><span class="chip" id="mode">Live</span><span class="chip">Last cycle <b id="lastc">-</b></span><span class="chip">Today <b id="spent">$0.00</b> / <b id="cap">$0</b></span><span class="chip">Next cycle <b id="next">-</b></span><span class="chip">Chief <b id="brain">-</b></span><button id="theme" class="chip" aria-label="Toggle dark mode">🌙</button></div>
+    <button id="replay">Replay last cycle</button>
+    <div id="controls"><button id="zin" title="Zoom in" aria-label="Zoom in">+</button><button id="zout" title="Zoom out" aria-label="Zoom out">−</button><button id="rot" title="Rotate" aria-label="Rotate">⟳</button><button id="home" title="Reset view" aria-label="Reset view">⌂</button><button id="tog" title="Show or hide thoughts" aria-label="Show or hide thoughts">💭</button></div>
+    <div id="help">Drag to move · wheel to zoom · right-drag or Q/E to rotate · WASD to fly · click a villager to follow</div>
+    <div id="card"><h3 id="cardt"></h3><p id="cardj"></p><p id="cardl"></p></div>
+  </div>
+  <div id="below">
+    <section class="panel" id="cal"><h2><button class="nav" id="calp" aria-label="Previous month">‹</button><span id="calm"></span><button class="nav" id="caln" aria-label="Next month">›</button></h2><div class="grid" id="calg"></div></section>
+    <section class="panel" id="tr"><h2>Trades <span id="trn"></span></h2><div class="wrap"><table><thead><tr><th>Coin</th><th>Opened</th><th>Status</th><th class="num">Entry</th><th class="num">Now</th><th class="num">SOL</th><th class="num">%</th></tr></thead><tbody id="trb"></tbody></table></div></section>
+    <section class="panel" id="les"><h2>What we learned</h2><div class="lcols"><div id="lT"></div><div id="lG"></div><div id="lM"></div></div></section>
+  </div>
+  </div>
+  <div id="side">
+    <section class="panel" id="ideasp"><div class="tabs"><button id="tabc" class="on">Graded coins</button><button id="tabi">Coin ideas</button></div><div class="scroll" id="coins"></div><div class="scroll" id="ideas" hidden></div></section>
+    <section class="panel" id="logp"><h2>Town log</h2><div class="scroll" id="log"></div></section>
+    <details class="panel" id="chatp"><summary>Talk to the Chief</summary><div class="scroll" id="chat"></div>
+      <form id="f"><input id="m" maxlength="1500" placeholder="Say something to the Chief" autocomplete="off"><button class="send">Send</button></form></details>
+  </div>
+</div>
+<script>fetch("/api/settings").then(r=>r.json()).then(s=>{if(!s.done)location.href="/settings"}).catch(()=>{})</script>
+<script type="module">
+import * as THREE from "three";
+const $=id=>document.getElementById(id);
+const C={grass:[0x8fd14f,0x9bdb55,0x7fc74a,0xa8e05f],road:[0xf2cf8e,0xeec585,0xf6d79c],dirt:0xb8763f,dirt2:0x9a5f33,sand:0xffe2a0,water:0x35cfd0,water2:0x6fe6e0,
+ wood:0x9a5f33,wood2:0x7a4a28,stone:0xcbb9a4,cream:0xfff0d0,glass:0xffe08a,leaf:[0x4fb85a,0x6fcf4f,0xf6a53a,0xef6f4f,0xf5c84b]};
+const GW=44,GD=26,ROAD=13;
+
+// Blocky buildings on a tile grid. door = tile where a villager stands.
+const B={
+ hall:{n:"Town Hall",x:18,z:3,w:8,d:6,h:5,roof:0xf4634a,wall:0xffe3a8,door:[22,10]},
+ news:{n:"Newsroom",x:3,z:4,w:6,d:5,h:3,roof:0x3fa7e0,wall:0xfff0d0,door:[6,10]},
+ library:{n:"Library",x:11,z:3,w:5,d:6,h:4,roof:0xc8385f,wall:0xffd9a0,door:[13.5,10]},
+ court:{n:"Courthouse",x:28,z:3,w:6,d:6,h:4,roof:0x8d6bd1,wall:0xfff0d0,door:[31,10]},
+ tavern:{n:"Crypto Tavern",x:36,z:4,w:6,d:5,h:3,roof:0xff8a3d,wall:0xc98a52,door:[39,10]},
+ tower:{n:"Watchtower",x:3,z:17,w:3,d:3,h:6,roof:0x2bb6a8,wall:0xe8d3b0,door:[4.5,16]},
+ market:{n:"Market",x:10,z:17,w:7,d:3,h:2,roof:0x6fbf3f,wall:0xffd166,door:[13.5,16]},
+ workshop:{n:"Idea Workshop",x:21,z:17,w:8,d:3,h:3,roof:0x3fa7e0,wall:0xff9f6a,door:[25,16]},
+ post:{n:"Trading Post",x:18,z:17,w:3,d:3,h:3,roof:0x14a064,wall:0xfff0d0,door:[19.5,16]},
+ vault:{n:"Appraisal Vault",x:40,z:17,w:3,d:3,h:3,roof:0xffc53d,wall:0xfff0d0,door:[41.5,16]},
+ studio:{n:"Media Studio",x:33,z:17,w:6,d:3,h:3,roof:0xe0559a,wall:0xb8f0ea,door:[36,16]}
+};
+const BOARD=[26,11.2],PLAZA=[22,ROAD];
+const A={
+ chief:{n:"Chief",job:"Runs the town and talks to you",home:"hall",hat:0xffc53d,body:0xf4634a,crown:1},
+ scout_culture:{n:"Nia",job:"Scout: culture and news on X",home:"news",hat:0x3fa7e0,body:0xffd166},
+ scout_crypto:{n:"Rook",job:"Scout: memecoin talk on X",home:"tavern",hat:0xff8a3d,body:0x8d6bd1},
+ scout_watchlist:{n:"Vex",job:"Scout: your watchlist on X",home:"tower",hat:0x2bb6a8,body:0xfff0d0},
+ scout_market:{n:"Bo",job:"Scout: our recorder's market data",home:"market",hat:0x6fbf3f,body:0xff8a3d},
+ summarizer:{n:"Sage",job:"Merges reports into the trend brief",home:"library",hat:0xc8385f,body:0x7fd6e8},
+ creator_absurd:{n:"Zig",job:"Creator: absurd meme concepts",home:"workshop",hat:0xa8e05f,body:0xe0559a},
+ creator_story:{n:"Mira",job:"Creator: stories from real moments",home:"workshop",hat:0xf4634a,body:0xffc53d},
+ creator_tech:{n:"Bit",job:"Creator: small real tools",home:"workshop",hat:0x7fd6e8,body:0x3fa7e0},
+ media:{n:"Pix",job:"Drafts headlines and image prompts",home:"studio",hat:0xff8a3d,body:0xa8e05f},
+ reviewer:{n:"Judge",job:"Checks the rules and scores ideas",home:"court",hat:0xfff0d0,body:0x5a3320},
+ trader:{n:"Kira",job:"Opens trades by the entry rules",home:"post",hat:0x14a064,body:0xfff0d0},
+ guard:{n:"Bastion",job:"Risk limits and exits",home:"post",hat:0x5a3320,body:0x14a064},
+ ledger:{n:"Penny",job:"Keeps the books and the profit tracker",home:"post",hat:0xffc53d,body:0x0e7a4e},
+ appraiser:{n:"Grader",job:"Grades active coins from chain and X data",home:"vault",hat:0xffc53d,body:0x8d6bd1}
+};
+
+// ---------- scene ----------
+const world=$("world"),cv=$("gl");
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(26,1,1,300);
+const center=new THREE.Vector3(GW/2,0,GD/2+1);
+const hemi=new THREE.HemisphereLight(0xfff2d6,0xffb27a,1.75);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffe0b0,2.1);sun.position.set(-22,42,26);sun.target.position.copy(center);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-38,right:38,top:30,bottom:-30,near:1,far:120});sun.shadow.bias=-.0006;sun.shadow.radius=3;
+scene.add(sun,sun.target);
+const box=new THREE.BoxGeometry(1,1,1),mats=new Map();
+const mat=c=>{if(!mats.has(c))mats.set(c,new THREE.MeshLambertMaterial({color:c}));return mats.get(c)};
+function cube(parent,x,y,z,w,h,d,c){const m=new THREE.Mesh(box,mat(c));m.scale.set(w,h,d);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;parent.add(m);return m}
+let seed=11;const rnd=()=>(seed=(seed*1664525+1013904223)>>>0)/4294967296;
+const pick=a=>a[rnd()*a.length|0];
+
+// Terrain: a chunky floating diorama of cubes, in one instanced mesh per layer.
+const isRoad=(x,z)=>{if(Math.abs(z-ROAD)<=1&&x>=1&&x<GW-1)return true;for(const k in B){const[dx,dz]=B[k].door;if(Math.abs(x+.5-dx)<=1&&((dz<ROAD&&z>=dz-1&&z<ROAD)||(dz>ROAD&&z>ROAD&&z<=dz)))return true}return Math.hypot(x+.5-PLAZA[0],z+.5-PLAZA[1])<4.2};
+const riverZ=x=>22+Math.round(Math.sin(x/5)*1);
+const tiles=[];
+for(let x=0;x<GW;x++)for(let z=0;z<GD;z++){const rz=riverZ(x),water=z>=rz;tiles.push({x,z,water,road:!water&&isRoad(x,z)})}
+const geo=new THREE.BoxGeometry(1,1,1),inst=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial(),tiles.length*3);
+inst.receiveShadow=inst.castShadow=true;
+{const m=new THREE.Matrix4(),col=new THREE.Color();let i=0;
+ for(const t of tiles){
+  const top=t.water?-.45:(t.road?-.12:0),c=t.water?C.dirt:t.road?pick(C.road):(t.z===riverZ(t.x)-1?C.sand:pick(C.grass));
+  const edge=(t.x===0||t.x===GW-1||t.z===0||t.z===GD-1);
+  m.makeScale(1,1,1);m.setPosition(t.x+.5,top-.5,t.z+.5);inst.setMatrixAt(i,m);inst.setColorAt(i++,col.set(c));
+  m.setPosition(t.x+.5,top-1.5,t.z+.5);inst.setMatrixAt(i,m);inst.setColorAt(i++,col.set(C.dirt));
+  m.makeScale(1,edge?1+rnd()*1.2:1,1);m.setPosition(t.x+.5,top-2.5-(edge?rnd()*.6:0),t.z+.5);inst.setMatrixAt(i,m);inst.setColorAt(i++,col.set(C.dirt2))}
+ inst.instanceColor.needsUpdate=true;scene.add(inst)}
+const waterTiles=[];
+for(const t of tiles)if(t.water){const m=new THREE.Mesh(box,new THREE.MeshLambertMaterial({color:(t.x+t.z)%2?C.water:C.water2,transparent:true,opacity:.92}));m.scale.set(1,.4,1);m.position.set(t.x+.5,-.3,t.z+.5);m.userData.p=t.x*.6+t.z;scene.add(m);waterTiles.push(m)}
+
+function house(b){
+ const g=new THREE.Group(),cx=b.x+b.w/2,cz=b.z+b.d/2;
+ cube(g,cx,b.h/2,cz,b.w,b.h,b.d,b.wall);
+ cube(g,cx,.2,cz,b.w+.5,.4,b.d+.5,C.stone);
+ for(let i=0;i<3;i++){const s=i*.9;if(b.w-s*2<1||b.d-s*2<.6)break;cube(g,cx,b.h+.3+i*.6,cz,b.w+.8-s*2,.6,b.d+.8-s*2,i%2?new THREE.Color(b.roof).offsetHSL(0,0,.07).getHex():b.roof)}
+ const front=b.z+b.d+.02,dx=b.door[0];
+ cube(g,dx,.9,front,1.2,1.8,.14,C.wood);cube(g,dx+.35,.9,front+.08,.12,.12,.08,0xffc53d);
+ for(let wx=b.x+1.1;wx<b.x+b.w-.6;wx+=1.9){if(Math.abs(wx-dx)<1.2)continue;cube(g,wx,b.h*.62,front,.95,.95,.12,C.glass);cube(g,wx,b.h*.62-.6,front+.03,1.15,.14,.2,C.wood2)}
+ const chim=cube(g,b.x+b.w-1.2,b.h+1.3,b.z+1.2,.7,1.4,.7,0xc98a52);b.chim=chim.position.clone().setY(b.h+2.1);
+ scene.add(g)}
+for(const k in B)house(B[k]);
+// flags, market awning stripes, tower top
+const hallFlag=cube(scene,22,9.6,6,.12,2,.12,C.wood2),flag=cube(scene,22.6,10.2,6,1.1,.7,.1,0xffc53d);
+for(let i=0;i<7;i++)cube(scene,10.5+i,2.2,20.5,1,.2,.8,i%2?0xfff0d0:0xf4634a);
+
+// Fountain and notice board
+{const[fx,fz]=PLAZA;for(const[dx,dz]of[[-1.5,0],[1.5,0],[0,-1.5],[0,1.5],[-1,-1],[1,-1],[-1,1],[1,1]])cube(scene,fx+dx,.25,fz+dz,1,.5,1,C.stone);
+ cube(scene,fx,.2,fz,2.4,.3,2.4,C.water);cube(scene,fx,.8,fz,.5,1.2,.5,C.stone);cube(scene,fx,1.5,fz,1.1,.2,1.1,C.stone)}
+const spout=[];for(let i=0;i<6;i++){const m=cube(scene,PLAZA[0],1.7,PLAZA[1],.14,.14,.14,0x9ff2ee);m.castShadow=false;spout.push(m)}
+cube(scene,BOARD[0]-.8,.7,BOARD[1]-.8,.18,1.4,.18,C.wood2);cube(scene,BOARD[0]+.8,.7,BOARD[1]-.8,.18,1.4,.18,C.wood2);
+cube(scene,BOARD[0],1.25,BOARD[1]-.8,2.2,1.1,.14,C.wood);
+const notes=[];for(let i=0;i<4;i++)notes.push(cube(scene,BOARD[0]-.65+i*.43,1.25,BOARD[1]-.71,.34,.5,.05,[0xfff0d0,0xffd166,0xffb0a0,0xb8f0ea][i]));
+
+// Trees, rocks, flowers on free grass
+const used=(x,z)=>{for(const k in B){const b=B[k];if(x>=b.x-1&&x<=b.x+b.w+1&&z>=b.z-1&&z<=b.z+b.d+1)return true}return isRoad(x|0,z|0)||z>=riverZ(x|0)-1};
+function tree(x,z){const h=1+rnd()*.8;cube(scene,x,h/2,z,.45,h,.45,C.wood);const c=pick(C.leaf);cube(scene,x,h+.5,z,1.5,1,1.5,c);cube(scene,x,h+1.3,z,1,.7,1,new THREE.Color(c).offsetHSL(0,0,.06).getHex())}
+for(let i=0;i<90;i++){const x=1+rnd()*(GW-2)|0,z=1+rnd()*(GD-3)|0;if(used(x,z))continue;const r=rnd();
+ if(r<.5)tree(x+.5,z+.5);else if(r<.65)cube(scene,x+.5,.25,z+.5,.8,.5,.7,C.stone);
+ else for(let k=0;k<3;k++){const px=x+rnd(),pz=z+rnd();cube(scene,px,.1,pz,.08,.2,.08,0x4c8f28);cube(scene,px,.24,pz,.18,.12,.18,pick([0xffc53d,0xf4634a,0xfff0d0,0xe0559a]))}}
+
+// Work marks: one scroll per real finished job today, stacked at the worker's door
+const marks={};const GEMC={F:0xf2eee4,E:0x3f8fe0,D:0x3fae5a,C:0x8d5bd1,B:0xff8a1f,A:0xe0342f,S:0xffffff};
+function setMarks(work){const by={};for(const k in A)by[A[k].home]=(by[A[k].home]||0)+(work[k]||0);
+ for(const k in B){const n=Math.min(by[k]||0,12),d=B[k].door,top=d[1]<ROAD,m=marks[k]||(marks[k]=[]);
+  while(m.length<n){const i=m.length,c=cube(scene,d[0]+1.6+(i%2)*.55,.14+Math.floor(i/2)*.26,d[1]+(top?-.5:.6),.5,.24,.34,i%3?0xfff0d0:0xffd166);m.push(c)}
+  while(m.length>n)scene.remove(m.pop());B[k].count=by[k]||0}}
+// Gem ring: the latest real grades float around the fountain
+const gems=[];
+function setGems(list){for(const g of gems)scene.remove(g);gems.length=0;
+ list.slice(0,8).forEach((c,i)=>{const an=i/8*Math.PI*2+.4,x=PLAZA[0]+Math.cos(an)*5.4,z=PLAZA[1]+Math.sin(an)*3.6;
+  const m=new THREE.Mesh(box,new THREE.MeshLambertMaterial({color:GEMC[c.grade]||0xffffff,emissive:GEMC[c.grade]||0xffffff,emissiveIntensity:.25}));
+  m.scale.setScalar(.75);m.position.set(x,1.5,z);m.castShadow=true;m.userData=c;scene.add(m);gems.push(m)})}
+
+// Puffs of chimney smoke
+const puffs=[];for(const k of["hall","tavern","workshop"])for(let i=0;i<4;i++){const m=new THREE.Mesh(box,new THREE.MeshLambertMaterial({color:0xfff6e6,transparent:true,opacity:.8}));m.userData={o:B[k].chim,t:i/4};scene.add(m);puffs.push(m)}
+
+// ---------- villagers ----------
+function makeBody(a){
+ const g=new THREE.Group(),sk=0xffcf9e;
+ const legL=cube(g,-.13,.16,0,.17,.32,.2,C.wood2),legR=cube(g,.13,.16,0,.17,.32,.2,C.wood2);
+ cube(g,0,.56,0,.5,.5,.32,a.body);
+ const armL=cube(g,-.34,.58,0,.14,.42,.16,a.body),armR=cube(g,.34,.58,0,.14,.42,.16,a.body);
+ cube(g,0,1.02,0,.46,.42,.42,sk);
+ cube(g,-.1,1.05,.22,.07,.09,.03,0x3a2418);cube(g,.1,1.05,.22,.07,.09,.03,0x3a2418);
+ cube(g,0,1.28,0,.54,.14,.5,a.hat);
+ if(a.crown){cube(g,0,1.42,0,.5,.16,.46,0xffc53d);for(const[dx,dz]of[[-.2,.18],[.2,.18],[-.2,-.18],[.2,-.18],[0,.18]])cube(g,dx,1.58,dz,.1,.16,.1,0xffc53d)}else cube(g,0,1.4,0,.34,.14,.32,a.hat);
+ g.scale.setScalar(2);scene.add(g);return{g,legL,legR,armL,armR}}
+for(const k in A){const a=A[k],d=B[a.home].door;Object.assign(a,{id:k,x:d[0]+(rnd()*3-1.5),z:d[1]+(d[1]<ROAD?1:-.2),path:[],pause:rnd()*3000,step:0,say:"",sayT:0,log:[],...makeBody(a)})}
+function route(a,tx,tz){const p=[];if(Math.abs(a.z-ROAD)>.8||Math.abs(a.x-tx)>.5){p.push([a.x,ROAD+(Math.random()-.5)]);p.push([tx,ROAD+(Math.random()-.5)])}p.push([tx,tz]);a.path=p}
+function sendTo(a,place){if(place==="board"){route(a,BOARD[0]+(Math.random()*2-1),BOARD[1]+.6);return}const d=B[place].door;route(a,d[0]+(Math.random()*2-1),d[1]+(d[1]<ROAD?.6:-.1))}
+function say(a,t,ms){a.say=clip(t,44);a.sayT=ms||4500}
+function tick(a,dt){
+ if(a.sayT>0)a.sayT-=dt;
+ const moving=a.path.length>0;
+ if(moving){const[tx,tz]=a.path[0],dx=tx-a.x,dz=tz-a.z,d=Math.hypot(dx,dz),sp=dt*.0034;
+  if(d<=sp){a.x=tx;a.z=tz;a.path.shift()}else{a.x+=dx/d*sp;a.z+=dz/d*sp;a.step+=dt;a.g.rotation.y=Math.atan2(dx,dz)}}
+ else{a.pause-=dt;a.g.rotation.y+=(0-a.g.rotation.y)*.05;
+  if(a.pause<=0){a.pause=2500+Math.random()*7000;
+   if(a.id==="chief"&&Math.random()<.7)return;
+   if(Math.random()<.22)route(a,PLAZA[0]+(Math.random()*9-4.5),ROAD+(Math.random()*3-1.5));
+   else{const d=B[a.home].door;route(a,d[0]+(Math.random()*3-1.5),d[1]+(d[1]<ROAD?1:-.2))}}}
+ const s=moving?Math.sin(a.step/80):0,bob=moving?Math.abs(Math.sin(a.step/80))*.09:Math.sin(performance.now()/500+a.x)*.012;
+ a.legL.rotation.x=s*.8;a.legR.rotation.x=-s*.8;a.armL.rotation.x=-s*.8;a.armR.rotation.x=s*.8;
+ a.g.position.set(a.x,bob,a.z)}
+
+// ---------- overlay ----------
+const bubbles=$("bubbles"),nodes={},v=new THREE.Vector3();
+let vw=1,vh=1;
+const view={x:center.x,z:center.z-2.5,yaw:0,zoom:1,base:80,follow:null};
+function applyCam(){const d=view.base*view.zoom;cam.position.set(view.x+Math.sin(view.yaw)*d*.56,d*.83,view.z+Math.cos(view.yaw)*d*.56);cam.lookAt(view.x,0,view.z)}
+function fit(){const r=world.getBoundingClientRect();vw=r.width;vh=r.height;renderer.setSize(vw,vh,false);cam.aspect=vw/vh;
+ view.base=Math.max(56,46/(.46*cam.aspect));cam.updateProjectionMatrix();applyCam()}
+addEventListener("resize",fit);
+const toScreen=(x,y,z)=>{v.set(x,y,z).project(cam);return[(v.x+1)/2*vw,(1-v.y)/2*vh]};
+let showThoughts=true;
+function place(el,x,y,pad){el.style.left=Math.min(Math.max(x,pad),vw-pad)+"px";el.style.top=Math.max(y,50)+"px"}
+function overlay(){const shown=[];for(const k in A){const a=A[k];let n=nodes[k];
+ if(!n){n=nodes[k]={tag:document.createElement("div"),bub:document.createElement("div"),th:document.createElement("div")};n.tag.className="nametag";n.bub.className="bubble";n.th.className="thought";n.tag.textContent=a.n;bubbles.append(n.tag,n.th,n.bub)}
+ const[sx,sy]=toScreen(a.x,0,a.z+.5),[hx,hy]=toScreen(a.x,a.crown?3.7:3.2,a.z);
+ const off=hx<-10||hx>vw+10||sy<0||sy>vh+10;n.tag.style.display=off?"none":"block";
+ if(off){n.bub.style.display=n.th.style.display="none";continue}
+ n.tag.style.left=sx+"px";n.tag.style.top=sy+"px";
+ if(a.sayT>0){n.bub.style.display="block";n.bub.textContent=a.say;place(n.bub,hx,hy,100);n.th.style.display="none"}
+ else{n.bub.style.display="none";
+  if(showThoughts&&a.thought){n.th.style.display="block";n.th.textContent=a.thought;n.th.classList.toggle("busy",!!a.busy);place(n.th,hx,hy-10,80);shown.push(n.th)}else n.th.style.display="none"}}
+ // keep thought clouds from stacking on each other
+ shown.sort((p,q)=>parseFloat(q.style.top)-parseFloat(p.style.top));const done=[];
+ for(const el of shown){const w=el.offsetWidth,h=el.offsetHeight,x=parseFloat(el.style.left);let y=parseFloat(el.style.top);
+  for(let pass=0;pass<8;pass++){const hit=done.find(d=>Math.abs(d.x-x)<(d.w+w)/2+4&&Math.abs(d.y-y)<(d.h+h)/2+6);if(!hit)break;y=hit.y-(hit.h+h)/2-8}
+  el.style.top=Math.max(y,50)+"px";done.push({x,y,w,h})}
+}
+
+// ---------- events drive the town ----------
+const seen=new Set();let queue=[],replaying=false;
+const clip=(t,n)=>t.length>n?t.slice(0,n-1).trimEnd()+"…":t;
+function label(e){const name=e.text.split(/[:(]/)[0].trim();
+ if(e.type==="working")return"⏳ Working";
+ if(e.type==="report"){if(e.actor==="summarizer")return"📰 Brief ready";if(e.actor==="scout_market")return"📈 "+(e.text.match(/\d+/)||["0"])[0]+" new grads";return"🔎 "+clip(short(e.text).replace("Top theme: ",""),24)}
+ if(e.type==="idea")return"💡 "+clip(name,22);
+ if(e.type==="verdict")return(/:\s*reject/.test(e.text)?"❌ ":"✅ ")+clip(name,22);
+ if(e.type==="trade")return(e.text.startsWith("Bought")?"🟢 ":"🔴 ")+clip(e.text.split(":")[0],24);
+ if(e.type==="book")return"📒 "+clip(e.text,24);
+ if(e.type==="pass")return"⏭️ "+clip(e.text.split(":")[0],22);
+ if(e.type==="grade")return"💎 "+clip(e.text.split(" (")[0],24);
+ if(e.type==="done"&&e.actor==="appraiser")return"💎 "+e.text;
+ if(e.type==="done")return"🏁 "+(e.text.match(/\d+ ideas/)||["Done"])[0];
+ if(e.type==="stopped")return"⚠️ Stopped";
+ if(e.type==="start")return"🚀 Cycle started";return""}
+function think(e){const a=A[e.actor];if(!a)return;const t=label(e);if(t)a.thought=t;a.busy=e.type==="working";
+ if(e.type==="done"||e.type==="stopped")for(const k in A){A[k].busy=false;if(A[k].thought==="⏳ Working")A[k].thought="✔ Finished"}}
+function act(e){const a=A[e.actor];if(!a)return;think(e);
+ a.log.unshift(e.text);a.log.length=Math.min(a.log.length,4);
+ if(e.type==="working")sendTo(a,a.home);
+ else if(e.type==="report")sendTo(a,a.id==="summarizer"?"hall":"library");
+ else if(e.type==="idea"||e.type==="verdict")sendTo(a,"board");
+ say(a,a.thought||"...",3500)}
+function short(t){const m=t.match(/"theme":\s*"([^"]+)"/);return m?"Top theme: "+m[1]:t.replace(/[*#]/g,"")}
+function logLine(e){const p=document.createElement("p");p.className="log";const b=document.createElement("b");b.textContent=(A[e.actor]?A[e.actor].n:e.actor)+" ";p.append(b,document.createTextNode(e.text.slice(0,120)));$("log").prepend(p);while($("log").children.length>60)$("log").lastChild.remove()}
+let lastEvents=[],booted=false;
+const put=(id,t)=>{const el=$(id);if(el.textContent!==t)el.textContent=t};
+async function poll(){try{const s=await(await fetch("/api/state")).json();
+ put("brain",s.chief);put("spent","$"+s.spent.toFixed(2));put("cap","$"+s.cap.toFixed(2));
+ const m=Math.max(0,Math.round((s.next_run-s.now)/60));put("next",m>=60?Math.floor(m/60)+"h "+m%60+"m":m+"m");
+ lastEvents=s.events;
+ const done=[...s.events].reverse().find(e=>e.actor==="chief"&&e.type==="done");put("lastc",done?ago(s.now-done.ts):"none yet");
+ for(const e of s.events){const k=e.ts+e.actor+e.text;if(seen.has(k))continue;seen.add(k);logLine(e);if(booted)queue.push(e);else think(e)}
+ renderPnl(s.pnl);renderTrades(s.trades);renderLessons(s.lessons);work=s.work;const wk=JSON.stringify(s.work);if(wk!==workKey){workKey=wk;setMarks(s.work)}
+ booted=true;renderIdeas(s.ideas);renderCoins(s.coins);renderChat(s.chat)}catch(_){}}
+function ago(sec){const m=Math.round(sec/60);return m<60?m+"m ago":Math.floor(m/60)+"h "+m%60+"m ago"}
+const fmt=v=>(v>=0?"+":"")+v.toFixed(4);
+function renderPnl(p){put("pEq",p.equity.toFixed(4)+" SOL");put("pPct",(p.pct>=0?"+":"")+p.pct.toFixed(2)+"%");put("pDay",fmt(p.today));put("pReal",fmt(p.realized));
+ put("pOpen",p.open.length+" · "+fmt(p.open_pnl));put("pWin",p.trades?Math.round(p.wins/p.trades*100)+"% of "+p.trades:"no trades yet");
+ const c=p.curve;if(c.length>1){const lo=Math.min(...c),hi=Math.max(...c),sp=(hi-lo)||1;$("pLine").setAttribute("points",c.map((v,i)=>`${(i/(c.length-1)*200).toFixed(1)},${(44-(v-lo)/sp*40).toFixed(1)}`).join(" "))}}
+let lesKey="";
+function lcard(title,text,note,cls){const d=document.createElement("div");d.className="lesson";const b=document.createElement("b");if(cls)b.className=cls;b.textContent=title;const p=document.createElement("div");p.textContent=text;d.append(b,p);if(note){const s=document.createElement("small");s.textContent=note;d.append(s)}return d}
+function head(t){const h=document.createElement("h3");h.textContent=t;return h}
+function renderLessons(l){const key=JSON.stringify(l);if(key===lesKey)return;lesKey=key;
+ const a=$("lT"),b=$("lG"),c=$("lM");a.replaceChildren(head("From each trade"));b.replaceChildren(head("How grades really did"));c.replaceChildren(head("What we got wrong"));
+ for(const t of l.trades.slice(0,8))a.append(lcard(`$${t.symbol} ${fmt(t.pnl)} SOL (${t.pct>=0?"+":""}${t.pct.toFixed(0)}%)`,t.text,`${t.exit} after ${t.mins} min`,t.pnl>=0?"up":"dn"));
+ if(!l.trades.length)a.append(lcard("No closed trades yet","",""));
+ for(const g of l.grades){const d=lcard("",`${g.n} coins: ${g.doubled} doubled, ${g.halved} halved`,"");d.firstChild.replaceWith(badge(g.grade));b.append(d)}
+ if(l.smart){const f=(k,t)=>{const g=l.smart[k];if(g[0])b.append(lcard(t,`${g[0]} coins: ${g[1]} doubled, ${g[2]} halved`,""))};f("with","👛 Tracked wallet in");f("without","No tracked wallet")}
+ if(!l.grades.length)b.append(lcard("Still collecting","Coins are judged 30 minutes after grading.",""));
+ for(const m of l.missed)c.append(lcard(`Missed $${m.symbol}`,`${m.grade} coin went ${m.x.toFixed(1)}x and we did not buy it.`,""));
+ for(const w of l.wrong)c.append(lcard(`Graded too high: $${w.symbol}`,`${w.grade} coin never rose and fell by half.`,""));
+ if(!l.missed.length&&!l.wrong.length)c.append(lcard("Nothing yet","Missed winners and bad grades appear here.",""))}
+let trKey="",days={},calOff=0;
+const SUB="₀₁₂₃₄₅₆₇₈₉";
+const px=v=>{if(!v)return"-";const m=v.toExponential(3).split("e-");if(m.length<2)return v.toPrecision(4);const z=+m[1]-1;return"0.0"+[...String(z)].map(d=>SUB[d]).join("")+m[0].replace(".","").replace(/0+$/,"")};
+function renderTrades(t){const key=JSON.stringify(t);if(key===trKey)return;trKey=key;days=t.days;renderCal();
+ put("trn",t.list.length+" total");const b=$("trb");b.replaceChildren();
+ for(const r of t.list){const tr=document.createElement("tr");const a=document.createElement("a");a.href="https://pump.fun/coin/"+encodeURIComponent(r.mint);a.target="_blank";a.rel="noopener noreferrer";a.textContent="$"+r.symbol;
+  const td=(x,c)=>{const e=document.createElement("td");if(c)e.className=c;e.append(x);return e};
+  const cl=r.pnl>=0?"num up":"num dn";
+  tr.append(td(a),td(new Date(r.opened*1000).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})),td(r.closed?r.reason:"🟢 open"),td(px(r.entry),"num"),td(px(r.price),"num"),td(fmt(r.pnl),cl),td((r.pct>=0?"+":"")+r.pct.toFixed(1)+"%",cl));b.append(tr)}
+ if(!t.list.length){const tr=document.createElement("tr"),e=document.createElement("td");e.colSpan=7;e.textContent="No trades yet.";tr.append(e);b.append(tr)}}
+function renderCal(){const now=new Date(),first=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()+calOff,1)),y=first.getUTCFullYear(),m=first.getUTCMonth();
+ const n=new Date(Date.UTC(y,m+1,0)).getUTCDate(),pad=(first.getUTCDay()+6)%7,g=$("calg");g.replaceChildren();
+ for(const d of["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]){const e=document.createElement("div");e.className="dow";e.textContent=d;g.append(e)}
+ for(let i=0;i<pad;i++){const e=document.createElement("div");e.className="day blank";g.append(e)}
+ let total=0;for(let d=1;d<=n;d++){const k=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`,e=document.createElement("div"),v=days[k];e.className="day"+(v>0?" up":v<0?" dn":"");
+  if(calOff===0&&d===now.getUTCDate())e.classList.add("now");e.textContent=d;if(v!==undefined){total+=v;const b=document.createElement("b");b.textContent=fmt(v);e.append(b)}g.append(e)}
+ put("calm",first.toLocaleString("en",{month:"long",year:"numeric",timeZone:"UTC"})+" · "+fmt(total)+" SOL")}
+// dark mode: the choice is remembered per browser; the page works without storage too
+function setTheme(dark){document.documentElement.dataset.theme=dark?"dark":"light";$("theme").textContent=dark?"☀️":"🌙";hemi.intensity=dark?.75:1.75;sun.intensity=dark?.95:2.1;hemi.color.set(dark?0xa8b8ff:0xfff2d6);sun.color.set(dark?0xc8d4ff:0xffe0b0);try{localStorage.setItem("town-theme",dark?"dark":"light")}catch(_){}}
+$("theme").onclick=()=>setTheme(document.documentElement.dataset.theme!=="dark");
+try{if(localStorage.getItem("town-theme")==="dark")setTheme(true)}catch(_){}
+$("calp").onclick=()=>{calOff--;renderCal()};$("caln").onclick=()=>{calOff++;renderCal()};
+let work={},workKey="",coinsKey="";
+const LADDER=["F","E","D","C","B","A","S"];
+function badge(g){const b=document.createElement("span");b.className="badge g-"+g;b.textContent=g;return b}
+function renderCoins(list){const key=JSON.stringify(list);if(key===coinsKey)return;coinsKey=key;setGems(list);const box=$("coins"),top=box.scrollTop;box.replaceChildren();
+ const l=document.createElement("div");l.className="ladder";LADDER.forEach(g=>l.append(badge(g)));box.append(l);
+ if(!list.length){box.append("No coins graded yet.");return}
+ for(const c of list){const d=document.createElement("div");d.className="coin b-"+c.grade;
+  const a=document.createElement("a");a.href="https://pump.fun/coin/"+encodeURIComponent(c.mint);a.target="_blank";a.rel="noopener noreferrer";a.textContent=c.symbol?"$"+c.symbol:c.mint.slice(0,6);
+  const t=document.createElement("div");t.append(badge(c.grade),a);
+  const g=document.createElement("small");g.textContent="👍 "+((c.reasons.good||[]).slice(0,3).join(", ")||"nothing yet");
+  const w=document.createElement("small");w.textContent="👎 "+((c.reasons.bad||[]).slice(0,3).join(", ")||"nothing found");
+  const m=document.createElement("small");m.textContent=`${c.score}/100 · ~${Math.round(c.mcap_sol||0)} SOL cap · ${c.x?"X checked":"chain only"} · ${ago(Math.floor(Date.now()/1000)-c.ts)}`;
+  d.append(t,g,w,m);if(c.smart&&c.smart.length){const s=document.createElement("small");s.textContent="👛 tracked wallets: "+c.smart.slice(0,4).join(", ")+(c.smart.length>4?` +${c.smart.length-4}`:"");d.append(s)}box.append(d)}box.scrollTop=top}
+function tab(c){$("coins").hidden=!c;$("ideas").hidden=c;$("tabc").classList.toggle("on",c);$("tabi").classList.toggle("on",!c)}
+$("tabc").onclick=()=>tab(true);$("tabi").onclick=()=>tab(false);
+let ideasKey="";
+function renderIdeas(list){const key=JSON.stringify(list);if(key===ideasKey)return;ideasKey=key;const box=$("ideas"),top=box.scrollTop;box.replaceChildren();
+ if(!list.length){box.textContent="No ideas yet.";return}
+ for(const i of list){const d=document.createElement("div");d.className="idea"+(i.verdict==="reject"?" reject":"");
+  const b=document.createElement("b");b.textContent=`${i.name} ($${i.ticker})`;
+  const tl=document.createElement("div");tl.append(badge(i.grade||"F"),b);
+  const c=document.createElement("div");c.textContent=i.concept||"";
+  const s=document.createElement("small");s.textContent=`${i.verdict||"?"}${i.score?" · score "+i.score:""} · ${A[i.agent]?A[i.agent].n:i.agent}`;
+  d.className+=" b-"+(i.grade||"F");d.append(tl,c,s);box.append(d)}box.scrollTop=top}
+let chatLen=-1;
+function renderChat(list){if(list.length===chatLen)return;chatLen=list.length;const box=$("chat");box.replaceChildren();
+ if(!list.length){const p=document.createElement("p");p.className="msg";p.textContent="Ask the Chief what the town found, or what to change.";box.append(p)}
+ for(const m of list)box.append(msg(m.who,m.text));box.scrollTop=box.scrollHeight}
+function msg(who,text){const p=document.createElement("p");p.className="msg"+(who==="Chief"?" chief":"");const b=document.createElement("b");b.textContent=who+": ";p.append(b,document.createTextNode(text));return p}
+$("f").addEventListener("submit",async ev=>{ev.preventDefault();const t=$("m").value.trim();if(!t)return;$("m").value="";
+ $("chat").append(msg("You",t));$("chat").scrollTop=1e9;say(A.chief,"💭 Thinking",30000);
+ try{const r=await(await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json","X-Town":"1"},body:JSON.stringify({message:t})})).json();
+  say(A.chief,"💬 Replied in chat",3500)}catch(_){say(A.chief,"⚠️ Server offline",5000)}
+ chatLen=-1;poll()});
+$("replay").addEventListener("click",()=>{let start=-1;for(let i=lastEvents.length-1;i>=0;i--)if(lastEvents[i].type==="start"&&lastEvents[i].actor==="chief"){start=i;break}
+ queue=start>=0?lastEvents.slice(start):[];if(queue.length){replaying=true;$("mode").textContent="Replay of a past cycle"}});
+// free camera: drag pans, right-drag rotates, wheel zooms, keys fly
+let drag=null;const keys=new Set();
+function pan(dx,dy){const k=view.base*view.zoom*.0016,c=Math.cos(view.yaw),n=Math.sin(view.yaw);view.follow=null;view.x=Math.min(GW+6,Math.max(-6,view.x-(dx*c+dy*n)*k));view.z=Math.min(GD+6,Math.max(-6,view.z-(-dx*n+dy*c)*k*1.3))}
+const zoomBy=f=>{view.zoom=Math.min(1.5,Math.max(.28,view.zoom*f))};
+cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,b:e.button,moved:0};cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;drag.moved+=Math.abs(dx)+Math.abs(dy);if(drag.b===2)view.yaw-=dx*.008;else pan(dx,dy)});
+cv.addEventListener("pointerup",()=>{setTimeout(()=>{drag=null},0)});
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+cv.addEventListener("wheel",e=>{e.preventDefault();zoomBy(e.deltaY>0?1.1:.9)},{passive:false});
+addEventListener("keydown",e=>{if(e.target.tagName==="INPUT")return;keys.add(e.key.toLowerCase());if(e.key==="Escape"){view.follow=null;$("card").style.display="none"}});
+addEventListener("keyup",e=>keys.delete(e.key.toLowerCase()));
+$("zin").onclick=()=>zoomBy(.8);$("zout").onclick=()=>zoomBy(1.25);$("rot").onclick=()=>{view.yaw+=Math.PI/4};
+$("home").onclick=()=>Object.assign(view,{x:center.x,z:center.z-2.5,yaw:0,zoom:1,follow:null});
+$("tog").onclick=()=>{showThoughts=!showThoughts};
+cv.addEventListener("click",ev=>{if(drag&&drag.moved>6)return;const r=cv.getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;
+ let best=null,bd=34;for(const k in A){const[sx,sy]=toScreen(A[k].x,.7,A[k].z),d=Math.hypot(sx-x,sy-y);if(d<bd){bd=d;best=A[k]}}
+ if(best){view.follow=best;card(best.n,best.job,`Jobs done today: ${work[best.id]||0}. ${best.thought||"Nothing to report yet."}`);return}
+ for(const m of gems){const[sx,sy]=toScreen(m.position.x,m.position.y,m.position.z);if(Math.hypot(sx-x,sy-y)<26){const c=m.userData;card(`$${c.symbol||c.mint.slice(0,6)} · ${c.grade}`,`Score ${c.score}/100`,(c.reasons.good||[]).concat(c.reasons.bad||[]).slice(0,4).join(", "));return}}
+ let bb=null,bdist=70;for(const k in B){const b=B[k],[sx,sy]=toScreen(b.x+b.w/2,b.h/2,b.z+b.d/2),d=Math.hypot(sx-x,sy-y);if(d<bdist){bdist=d;bb=k}}
+ if(bb){const who=Object.values(A).filter(a=>a.home===bb).map(a=>a.n).join(", ");card(B[bb].n,"Home of "+who,`Jobs done today: ${B[bb].count||0}`);return}
+ view.follow=null;$("card").style.display="none"});
+function card(t,j,l){$("cardt").textContent=t;$("cardj").textContent=j;$("cardl").textContent=l;$("card").style.display="block"}
+
+// ---------- main loop ----------
+let last=performance.now(),nextEvent=0;
+function frame(t){const dt=Math.min(60,t-last);last=t;
+ if(queue.length&&t>nextEvent){act(queue.shift());nextEvent=t+1500}
+ if(replaying&&!queue.length){replaying=false;$("mode").textContent="Live"}
+ for(const k in A)tick(A[k],dt);
+ for(const m of waterTiles)m.position.y=-.3+Math.sin(t/650+m.userData.p)*.05;
+ flag.scale.x=1.1+Math.sin(t/200)*.1;
+ for(const m of gems){m.rotation.y=t/700;m.rotation.x=.6;m.position.y=1.5+Math.sin(t/500+m.position.x)*.15;if(m.userData.grade==="S"){m.material.color.setHSL((t/2000)%1,.85,.6);m.material.emissive.copy(m.material.color)}}
+ spout.forEach((m,i)=>{const p=(t/900+i/6)%1,an=i*1.05;m.position.set(PLAZA[0]+Math.cos(an)*p*.8,1.7+Math.sin(p*3.14)*.9,PLAZA[1]+Math.sin(an)*p*.8)});
+ for(const m of puffs){const p=(t/2600+m.userData.t)%1,s=.25+p*.45;m.scale.setScalar(s);m.material.opacity=.8*(1-p);m.position.copy(m.userData.o);m.position.y+=p*2.6;m.position.x+=Math.sin(p*5)*.3}
+ const sp=dt*.6;if(keys.has("w")||keys.has("arrowup"))pan(0,sp);if(keys.has("s")||keys.has("arrowdown"))pan(0,-sp);if(keys.has("a")||keys.has("arrowleft"))pan(sp,0);if(keys.has("d")||keys.has("arrowright"))pan(-sp,0);
+ if(keys.has("q"))view.yaw+=dt*.0015;if(keys.has("e"))view.yaw-=dt*.0015;
+ if(view.follow){view.x+=(view.follow.x-view.x)*.08;view.z+=(view.follow.z-view.z)*.08}
+ applyCam();renderer.render(scene,cam);overlay();requestAnimationFrame(frame)}
+fit();poll();setInterval(poll,4000);requestAnimationFrame(frame);
+</script>
+</body>
+</html>

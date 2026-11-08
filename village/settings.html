@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PumpTown Settings</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--text:#22262e;--muted:#6a7180;--line:#e2ded4;--accent:#14804f;--accent-text:#fff;--bad:#c23a32;--field:#fbfaf7}
+@media (prefers-color-scheme:dark){:root{--bg:#14171d;--card:#1d2129;--text:#eef0f3;--muted:#9aa3b2;--line:#2f3541;--accent:#2fb577;--accent-text:#08140e;--bad:#f0746b;--field:#171b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+h1{font-size:22px;margin:0}
+h2{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 18px;font-size:15px}
+.layout{display:grid;grid-template-columns:190px 1fr;gap:20px}
+nav{display:flex;flex-direction:column;gap:2px}
+nav button{all:unset;cursor:pointer;padding:8px 12px;border-radius:8px;color:var(--muted)}
+nav button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+nav button.on{background:var(--card);color:var(--text);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-weight:600;font-size:14px;margin:16px 0 4px}
+.help{color:var(--muted);font-size:13px;margin:4px 0 0}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);font:inherit}
+textarea{min-height:96px;font-family:ui-monospace,Consolas,monospace;font-size:13px}
+.row{display:flex;gap:8px;align-items:center}
+.row input{flex:1}
+button.b{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);font:inherit;cursor:pointer}
+button.p{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600}
+.foot{display:flex;justify-content:space-between;gap:8px;margin-top:22px;flex-wrap:wrap}
+.tools{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.msg{font-size:14px;overflow-wrap:anywhere}.msg.err{color:var(--bad)}
+.note{padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;margin-top:14px;color:var(--muted)}
+.item{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;overflow-wrap:anywhere}
+.check{display:flex;gap:8px;align-items:center;font-weight:400;margin-top:10px}.check input{width:auto}
+a{color:var(--accent)}
+pre{white-space:pre-wrap;font-size:13px;overflow-wrap:anywhere}
+@media (max-width:640px){.layout{grid-template-columns:1fr}nav{flex-direction:row;overflow-x:auto}nav button{white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>PumpTown</h1><select id="lang" aria-label="Language" style="width:auto"><option value="en">English</option><option value="hu">Magyar</option></select></header>
+  <div class="layout"><nav id="nav"></nav><main class="card" id="page"></main></div>
+</div>
+<script>
+const T={en:{start:"Start",ai:"AI",x:"X data",solana:"Solana",wallet:"Wallet",server:"Server",mcp:"MCP",
+ welcome:"Welcome to PumpTown",welcomeSub:"Connect what you have. Everything is optional and can be changed later.",
+ startNote:"PumpTown runs on your computer and starts empty. Trades are simulated on live prices: it sends no orders and never asks for a private key.",
+ aiSub:"Pick the model that runs the agents and the chat.",xSub:"Used for trend scans and coin checks. Read-only.",solanaSub:"Where the chain data comes from.",
+ walletSub:"Follow your own activity and the wallets you care about.",serverSub:"Optional: run PumpTown on your own server.",mcpSub:"Give the Chief chat extra tools from MCP servers.",
+ auto:"Automatic",saved:"Saved. Leave empty to keep it",clear:"Remove",next:"Next",back:"Back",finish:"Finish",save:"Save",test:"Test connection",
+ testing:"Testing...",savedOk:"Saved",tracked:"Wallets to tag on coins",trackedHelp:"One per line: address,name",watch:"X accounts to watch",watchHelp:"Usernames, one per line",
+ mine:"Connected wallets",noMine:"No wallets connected yet.",profile:"pump.fun profile",trades:"Recent trades seen while PumpTown runs",buy:"buy",sell:"sell",
+ deploy:"Copy to server and start",deployHelp:"Needs SSH, Python 3 and tmux on the server. This can take a few minutes.",
+ name:"Name",url:"URL (HTTP server)",command:"Command (local server)",headers:"Headers as JSON (optional)",write:"Allow tools that can change things",enabled:"Enabled",add:"Add server",remove:"Remove",
+ mcpWarn:"A command runs on this computer, so only add servers you trust. Tools that can change things are off unless you allow them.",noMcp:"No MCP servers yet.",tools:"Tools"},
+hu:{start:"Kezdés",ai:"AI",x:"X adatok",solana:"Solana",wallet:"Wallet",server:"Szerver",mcp:"MCP",
+ welcome:"Üdv a PumpTownban",welcomeSub:"Csatlakoztasd, amid van. Minden opcionális, és később is módosítható.",
+ startNote:"A PumpTown a saját gépeden fut, és üresen indul. A kereskedések szimuláltak, élő árakon: nem küld megbízást, és sosem kér privát kulcsot.",
+ aiSub:"Válaszd ki a modellt, amely az ügynököket és a chatet futtatja.",xSub:"Trendkereséshez és coin-ellenőrzéshez. Csak olvas.",solanaSub:"Honnan jön a lánc-adat.",
+ walletSub:"Kövesd a saját aktivitásodat és a számodra fontos walleteket.",serverSub:"Opcionális: futtasd a PumpTownt a saját szervereden.",mcpSub:"Adj extra eszközöket a Chief chathez MCP-szerverekből.",
+ auto:"Automatikus",saved:"Elmentve. Üresen hagyva megmarad",clear:"Törlés",next:"Tovább",back:"Vissza",finish:"Kész",save:"Mentés",test:"Kapcsolat tesztelése",
+ testing:"Tesztelés...",savedOk:"Elmentve",tracked:"Coinokon jelölt walletek",trackedHelp:"Soronként egy: cím,név",watch:"Figyelt X-fiókok",watchHelp:"Felhasználónevek, soronként egy",
+ mine:"Csatlakoztatott walletek",noMine:"Még nincs csatlakoztatott wallet.",profile:"pump.fun profil",trades:"Friss kereskedések, amíg a PumpTown fut",buy:"vétel",sell:"eladás",
+ deploy:"Másolás a szerverre és indítás",deployHelp:"SSH, Python 3 és tmux kell a szerveren. Eltarthat néhány percig.",
+ name:"Név",url:"URL (HTTP szerver)",command:"Parancs (helyi szerver)",headers:"Fejlécek JSON-ban (opcionális)",write:"Módosító eszközök engedélyezése",enabled:"Bekapcsolva",add:"Szerver hozzáadása",remove:"Törlés",
+ mcpWarn:"A parancs ezen a gépen fut, ezért csak megbízható szervert adj hozzá. A módosító eszközök ki vannak kapcsolva, amíg nem engedélyezed őket.",noMcp:"Még nincs MCP-szerver.",tools:"Eszközök"}};
+const STEPS=["start","ai","x","solana","wallet","server","mcp"];
+let S=null,step=0,lang="en",values={},clear=new Set(),tracked="",watch="",mcp=[];
+try{lang=localStorage.getItem("pt-lang")||(navigator.language||"").startsWith("hu")&&"hu"||"en"}catch(_){}
+const t=k=>T[lang][k]||k,$=(tag,props={},...kids)=>{const e=Object.assign(document.createElement(tag),props);e.append(...kids);return e};
+async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json","X-Town":"1"},body:JSON.stringify(body)});return r.json()}
+async function load(){S=await api("/api/settings");values={};clear=new Set();for(const f of S.fields)if(!f.secret)values[f.key]=f.value;tracked=S.tracked.split("\n").filter(l=>l&&!l.startsWith("address,")).join("\n");watch=S.watchlist;mcp=S.mcp;render()}
+function fieldVisible(f){if(!f.show)return true;const p=values.LLM_PROVIDER||"auto";return p===f.show||(p==="auto"&&f.set)}
+function field(f){const box=$("div");const id="f-"+f.key;box.append($("label",{htmlFor:id,textContent:f[lang]}));let input;
+ if(f.kind==="provider"){input=$("select",{id});input.append($("option",{value:"auto",textContent:t("auto")}));for(const[k,v]of Object.entries(S.providers))input.append($("option",{value:k,textContent:v}));input.value=values[f.key]||"auto";input.onchange=()=>{values[f.key]=input.value;render()}}
+ else{input=$("input",{id,type:f.secret?"password":"text",autocomplete:"off",placeholder:f.secret&&f.set?t("saved"):f.hint||""});input.value=(f.secret?values[f.key]||"":values[f.key]||"");input.oninput=()=>{values[f.key]=input.value}}
+ if(f.secret&&f.set){const c=$("button",{className:"b",type:"button",textContent:t("clear"),onclick:()=>{clear.add(f.key);f.set=false;render()}});box.append($("div",{className:"row"},input,c))}else box.append(input);
+ const help=f["help_"+lang];if(help)box.append($("p",{className:"help",textContent:help}));return box}
+function fields(sec){return S.fields.filter(f=>f.section===sec&&fieldVisible(f)).map(field)}
+function area(label,help,value,set){const id="a"+label.length;const a=$("textarea",{id,value,spellcheck:false});a.oninput=()=>set(a.value);return $("div",{},$("label",{htmlFor:id,textContent:label}),a,$("p",{className:"help",textContent:help}))}
+function msgBox(){return $("span",{className:"msg",role:"status"})}
+function say(m,text,bad){m.textContent=text;m.className="msg"+(bad?" err":"")}
+async function save(finish){const v={...values};const r=await api("/api/settings/save",{values:v,clear:[...clear],tracked,watchlist:watch,finish});return r}
+function tester(path,label){const m=msgBox();const b=$("button",{className:"b",type:"button",textContent:label||t("test"),onclick:async()=>{say(m,t("testing"));const s=await save(false);if(!s.ok){say(m,s.error,true);return}const r=await api(path,{});say(m,r.ok?"✓ "+(Array.isArray(r.result)?r.result.join(", "):r.result):r.error,!r.ok)}});return $("div",{className:"tools"},b,m)}
+function wallets(box){api("/api/wallets").then(d=>{box.replaceChildren($("h2",{textContent:t("mine"),style:"margin-top:22px"}));if(!d.wallets.length){box.append($("p",{className:"help",textContent:t("noMine")}));return}
+ for(const w of d.wallets)box.append($("div",{className:"item"},$("span",{textContent:w.address}),$("span",{},(w.sol===null?"":w.sol+" SOL · "),$("a",{href:w.profile,target:"_blank",rel:"noopener",textContent:t("profile")}))));
+ if(d.trades.length){box.append($("label",{textContent:t("trades")}));for(const x of d.trades)box.append($("div",{className:"item"},$("span",{textContent:new Date(x.ts*1000).toLocaleString()+" · "+x.mint.slice(0,8)}),$("span",{textContent:(x.buy?t("buy"):t("sell"))+" "+x.sol+" SOL"})))}})}
+function mcpPage(p){const list=$("div");const err=msgBox();const store=async()=>{const r=await api("/api/mcp/save",{servers:mcp});say(err,r.ok?t("savedOk"):r.error,!r.ok);return r.ok};
+ if(!mcp.length)list.append($("p",{className:"help",textContent:t("noMcp")}));
+ mcp.forEach((s,i)=>{const m=msgBox();list.append($("div",{className:"item"},$("span",{textContent:s.name+" · "+(s.url||s.command)}),$("span",{className:"row"},m,
+  $("button",{className:"b",type:"button",textContent:t("test"),onclick:async()=>{say(m,t("testing"));const r=await api("/api/mcp/test",{name:s.name});say(m,r.ok?t("tools")+": "+r.result.join(", "):r.error,!r.ok)}}),
+  $("button",{className:"b",type:"button",textContent:t("remove"),onclick:async()=>{mcp.splice(i,1);await store();render()}}))))});
+ const n=$("input",{id:"m-n"}),u=$("input",{id:"m-u",placeholder:"https://..."}),c=$("input",{id:"m-c",placeholder:"npx some-mcp-server"}),h=$("input",{id:"m-h",placeholder:'{"Authorization":"Bearer ..."}',type:"password",autocomplete:"off"}),w=$("input",{type:"checkbox"});
+ const add=$("button",{className:"b p",type:"button",textContent:t("add"),onclick:async()=>{let headers={};try{headers=h.value?JSON.parse(h.value):{}}catch(_){say(err,"JSON?",true);return}mcp.push({name:n.value.trim(),url:u.value.trim(),command:c.value.trim(),headers,enabled:true,allow_write:w.checked});if(await store())render();else mcp.pop()}});
+ p.append(list,$("label",{htmlFor:"m-n",textContent:t("name")}),n,$("label",{htmlFor:"m-u",textContent:t("url")}),u,$("label",{htmlFor:"m-c",textContent:t("command")}),c,$("label",{htmlFor:"m-h",textContent:t("headers")}),h,$("label",{className:"check"},w,t("write")),$("div",{className:"tools"},add,err),$("p",{className:"note",textContent:t("mcpWarn")}))}
+function render(){document.documentElement.lang=lang;$lang.value=lang;const nav=document.getElementById("nav");nav.replaceChildren(...STEPS.map((k,i)=>$("button",{className:i===step?"on":"",textContent:t(k),onclick:async()=>{await save(false);step=i;await load()}})));
+ const p=document.getElementById("page");p.replaceChildren();const k=STEPS[step];
+ if(k==="start"){p.append($("h2",{textContent:t("welcome")}),$("p",{className:"sub",textContent:t("welcomeSub")}),...fields("general"),$("p",{className:"note",textContent:t("startNote")}))}
+ if(k==="ai"){p.append($("h2",{textContent:t("ai")}),$("p",{className:"sub",textContent:t("aiSub")}),...fields("ai"),tester("/api/settings/test-ai"))}
+ if(k==="x"){p.append($("h2",{textContent:t("x")}),$("p",{className:"sub",textContent:t("xSub")}),...fields("x"),area(t("watch"),t("watchHelp"),watch,v=>watch=v))}
+ if(k==="solana"){p.append($("h2",{textContent:t("solana")}),$("p",{className:"sub",textContent:t("solanaSub")}),...fields("solana"),tester("/api/settings/test-rpc"))}
+ if(k==="wallet"){const box=$("div");p.append($("h2",{textContent:t("wallet")}),$("p",{className:"sub",textContent:t("walletSub")}),...fields("wallet"),area(t("tracked"),t("trackedHelp"),tracked,v=>tracked=v),box);wallets(box)}
+ if(k==="server"){const m=$("pre");const d=$("button",{className:"b",type:"button",textContent:t("deploy"),onclick:async()=>{m.textContent=t("testing");const s=await save(false);if(!s.ok){m.textContent=s.error;return}const r=await api("/api/settings/deploy",{});m.textContent=r.ok?r.result:r.error}});p.append($("h2",{textContent:t("server")}),$("p",{className:"sub",textContent:t("serverSub")}),...fields("server"),tester("/api/settings/test-server"),$("div",{className:"tools"},d),$("p",{className:"help",textContent:t("deployHelp")}),m)}
+ if(k==="mcp"){p.append($("h2",{textContent:t("mcp")}),$("p",{className:"sub",textContent:t("mcpSub")}));mcpPage(p)}
+ const msg=msgBox();const go=async n=>{const r=await save(false);if(!r.ok){say(msg,r.error,true);return}step=n;await load()};
+ const foot=$("div",{className:"foot"},step?$("button",{className:"b",type:"button",textContent:t("back"),onclick:()=>go(step-1)}):$("span"),msg,step<STEPS.length-1?$("button",{className:"b p",type:"button",textContent:t("next"),onclick:()=>go(step+1)}):$("button",{className:"b p",type:"button",textContent:t("finish"),onclick:async()=>{const r=await save(true);if(r.ok)location.href="/";else say(msg,r.error,true)}}));
+ p.append(foot)}
+const $lang=document.getElementById("lang");$lang.onchange=()=>{lang=$lang.value;try{localStorage.setItem("pt-lang",lang)}catch(_){}render()};
+load().catch(()=>{const hu=lang==="hu";document.getElementById("page").replaceChildren($("h2",{textContent:hu?"A PumpTown nem érhető el":"PumpTown is not reachable"}),$("p",{className:"sub",textContent:hu?"Indítsd el a start.bat vagy start.sh fájllal, majd nyisd meg: http://127.0.0.1:8421/settings":"Start it with start.bat or start.sh, then open http://127.0.0.1:8421/settings"}))});
+</script>
+</body>
+</html>
