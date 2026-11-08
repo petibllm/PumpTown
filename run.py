@@ -10,6 +10,7 @@ import glob
 import io
 import os
 import shlex
+import signal
 import subprocess
 import sys
 import tarfile
@@ -81,6 +82,7 @@ def start(open_browser):
         time.sleep(2)
         webbrowser.open(url)
     last_day, cleaned, cycle = None, 0.0, None
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))  # a stopped server also stops its services
     try:
         while True:
             time.sleep(5)
